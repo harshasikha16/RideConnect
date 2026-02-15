@@ -155,6 +155,15 @@ class RideConnectTester:
     
     def test_get_current_user(self):
         """Test getting current user info"""
+        # Make sure we're using the original user's session
+        if self.test_users:
+            user = self.test_users[0]
+            login_data = {"email": user['email'], "password": user['password']}
+            login_response = self.make_request('POST', '/auth/login', login_data, use_auth=False)
+            if login_response and login_response.status_code == 200:
+                self.session_token = login_response.json()['session_token']
+                self.user_id = user['user_id']
+        
         response = self.make_request('GET', '/auth/me')
         
         if response and response.status_code == 200:
@@ -163,7 +172,7 @@ class RideConnectTester:
                 self.log_test("Get Current User", True, f"User: {data.get('name', 'Unknown')}")
                 return True
             else:
-                self.log_test("Get Current User", False, f"User ID mismatch: {data}")
+                self.log_test("Get Current User", False, f"User ID mismatch: expected {self.user_id}, got {data.get('user_id')}")
                 return False
         else:
             self.log_test("Get Current User", False, f"Status: {response.status_code if response else 'No response'}")
