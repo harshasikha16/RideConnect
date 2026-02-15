@@ -49,17 +49,20 @@ class RideConnectTester:
             
         try:
             if method.upper() == 'GET':
-                response = self.session.get(url, headers=request_headers, timeout=30)
+                response = self.session.get(url, headers=request_headers, timeout=10)
             elif method.upper() == 'POST':
-                response = self.session.post(url, json=data, headers=request_headers, timeout=30)
+                response = self.session.post(url, json=data, headers=request_headers, timeout=10)
             elif method.upper() == 'PUT':
-                response = self.session.put(url, json=data, headers=request_headers, timeout=30)
+                response = self.session.put(url, json=data, headers=request_headers, timeout=10)
             elif method.upper() == 'DELETE':
-                response = self.session.delete(url, headers=request_headers, timeout=30)
+                response = self.session.delete(url, headers=request_headers, timeout=10)
             else:
                 raise ValueError(f"Unsupported method: {method}")
                 
             return response
+        except requests.exceptions.Timeout:
+            print(f"Request timeout for {method} {url}")
+            return None
         except requests.exceptions.RequestException as e:
             print(f"Request failed: {e}")
             return None
