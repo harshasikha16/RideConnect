@@ -454,19 +454,28 @@ class RideConnectTester:
             self.log_test("Ride Request Flow", False, "Need rides and 2 users")
             return False
         
-        # Switch to second user to request the ride
+        # Ensure we start with user 1 (ride owner) logged in
+        user1 = self.test_users[0]
         user2 = self.test_users[1]
-        login_data = {"email": user2['email'], "password": user2['password']}
         
-        login_response = self.make_request('POST', '/auth/login', login_data, use_auth=False)
-        if not login_response or login_response.status_code != 200:
+        # Login as user 1 first to ensure we have the right session
+        login_data1 = {"email": user1['email'], "password": user1['password']}
+        login_response1 = self.make_request('POST', '/auth/login', login_data1, use_auth=False)
+        if not login_response1 or login_response1.status_code != 200:
+            self.log_test("Ride Request Flow", False, "Failed to login as user 1")
+            return False
+        
+        user1_token = login_response1.json()['session_token']
+        
+        # Switch to second user to request the ride
+        login_data2 = {"email": user2['email'], "password": user2['password']}
+        login_response2 = self.make_request('POST', '/auth/login', login_data2, use_auth=False)
+        if not login_response2 or login_response2.status_code != 200:
             self.log_test("Ride Request Flow", False, "Failed to login as user 2")
             return False
             
         # Update session token to user 2
-        old_token = self.session_token
-        old_user_id = self.user_id
-        self.session_token = login_response.json()['session_token']
+        self.session_token = login_response2.json()['session_token']
         self.user_id = user2['user_id']
         
         # Request the ride
@@ -487,27 +496,36 @@ class RideConnectTester:
                 request_id = data['request_id']
                 print(f"    Created request: {request_id}")
                 
-                # Test getting my requests
+                # Test getting my requests (as user 2)
                 my_requests = self.make_request('GET', '/rides/requests/my')
                 if my_requests and my_requests.status_code == 200:
                     print(f"    My requests: {len(my_requests.json())} found")
                     
-                    # Switch back to original user to check received requests
-                    self.session_token = old_token
-                    self.user_id = old_user_id
+                    # Switch back to user 1 (ride owner) to check received requests
+                    self.session_token = user1_token
+                    self.user_id = user1['user_id']
                     
                     received_requests = self.make_request('GET', '/rides/requests/received')
                     if received_requests and received_requests.status_code == 200:
                         received_data = received_requests.json()
                         print(f"    Received requests: {len(received_data)} found")
                         
-                        # Accept the request
-                        accept_response = self.make_request('PUT', f'/rides/requests/{request_id}?action=accept')
-                        if accept_response and accept_response.status_code == 200:
-                            print(f"    Request accepted successfully")
-                            success = True
+                        if len(received_data) > 0:
+                            # Accept the request (as user 1, the ride owner)
+                            accept_response = self.make_request('PUT', f'/rides/requests/{request_id}?action=accept')
+                            if accept_response and accept_response.status_code == 200:
+                                print(f"    Request accepted successfully")
+                                success = True
+                            else:
+                                print(f"    Failed to accept request: {accept_response.status_code if accept_response else 'No response'}")
+                                if accept_response:
+                                    try:
+                                        error_data = accept_response.json()
+                                        print(f"    Accept error: {error_data}")
+                                    except:
+                                        print(f"    Accept response text: {accept_response.text}")
                         else:
-                            print(f"    Failed to accept request: {accept_response.status_code if accept_response else 'No response'}")
+                            print(f"    No received requests found for ride owner")
                     else:
                         print(f"    Failed to get received requests: {received_requests.status_code if received_requests else 'No response'}")
                 else:
@@ -523,9 +541,9 @@ class RideConnectTester:
                 except:
                     print(f"    Response text: {response.text}")
         
-        # Restore original session
-        self.session_token = old_token
-        self.user_id = old_user_id
+        # Restore original session (user 1)
+        self.session_token = user1_token
+        self.user_id = user1['user_id']
         
         if success:
             self.log_test("Ride Request Flow", True, "Request created and accepted")
