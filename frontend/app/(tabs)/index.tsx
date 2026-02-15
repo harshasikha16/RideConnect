@@ -11,10 +11,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { api } from '../../src/services/api';
-import { RideCard } from '../../src/components/RideCard';
-import { Ride } from '../../src/types';
-import { useAuth } from '../../src/context/AuthContext';
+import { api } from '@/src/services/api';
+import { RideCard } from '@/src/components/RideCard';
+import { Ride } from '@/src/types';
+import { useAuth } from '@/src/context/AuthContext';
 
 export default function Home() {
   const router = useRouter();

@@ -14,9 +14,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
-import { api } from '../src/services/api';
-import { Ride } from '../src/types';
-import { useAuth } from '../src/context/AuthContext';
+import { api } from '@/src/services/api';
+import { Ride } from '@/src/types';
+import { useAuth } from '@/src/context/AuthContext';
 
 export default function RideDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();

@@ -15,8 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { api } from '../../src/services/api';
-import { useAuth } from '../../src/context/AuthContext';
+import { api } from '@/src/services/api';
+import { useAuth } from '@/src/context/AuthContext';
 
 export default function Post() {
   const router = useRouter();

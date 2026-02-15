@@ -12,11 +12,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { api } from '../src/services/api';
-import { User, UserStats, Ride } from '../src/types';
-import { useAuth } from '../src/context/AuthContext';
-import { RideCard } from '../src/components/RideCard';
-import { UserCard } from '../src/components/UserCard';
+import { api } from '@/src/services/api';
+import { User, UserStats, Ride } from '@/src/types';
+import { useAuth } from '@/src/context/AuthContext';
+import { RideCard } from '@/src/components/RideCard';
+import { UserCard } from '@/src/components/UserCard';
 
 export default function UserProfile() {
   const { id, tab } = useLocalSearchParams<{ id: string; tab?: string }>();

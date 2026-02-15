@@ -16,9 +16,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useAuth } from '../../src/context/AuthContext';
-import { api } from '../../src/services/api';
-import { UserStats, Ride } from '../../src/types';
+import { useAuth } from '@/src/context/AuthContext';
+import { api } from '@/src/services/api';
+import { UserStats, Ride } from '@/src/types';
 
 export default function Profile() {
   const router = useRouter();
