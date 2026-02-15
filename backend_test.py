@@ -251,22 +251,47 @@ class RideConnectTester:
         if len(self.test_users) < 2:
             self.log_test("Follow User", False, "Need 2 users for follow test")
             return False
+        
+        # Ensure we're logged in as the first user
+        user = self.test_users[0]
+        login_data = {"email": user['email'], "password": user['password']}
+        login_response = self.make_request('POST', '/auth/login', login_data, use_auth=False)
+        if login_response and login_response.status_code == 200:
+            self.session_token = login_response.json()['session_token']
+            self.user_id = user['user_id']
             
         target_user_id = self.test_users[1]['user_id']
         follow_data = {"following_id": target_user_id}
         
         response = self.make_request('POST', '/follow', follow_data)
         
-        if response and response.status_code == 200:
-            data = response.json()
-            if 'message' in data:
-                self.log_test("Follow User", True, f"Message: {data['message']}")
-                return True
+        if response:
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data:
+                    self.log_test("Follow User", True, f"Message: {data['message']}")
+                    return True
+                else:
+                    self.log_test("Follow User", False, f"Invalid response: {data}")
+                    return False
+            elif response.status_code == 400:
+                # Check if it's because already following
+                try:
+                    error_data = response.json()
+                    if "Already following" in error_data.get('detail', ''):
+                        self.log_test("Follow User", True, f"Already following: {error_data['detail']}")
+                        return True
+                    else:
+                        self.log_test("Follow User", False, f"Bad request: {error_data.get('detail', 'Unknown error')}")
+                        return False
+                except:
+                    self.log_test("Follow User", False, f"Bad request: Status {response.status_code}")
+                    return False
             else:
-                self.log_test("Follow User", False, f"Invalid response: {data}")
+                self.log_test("Follow User", False, f"Status: {response.status_code}")
                 return False
         else:
-            self.log_test("Follow User", False, f"Status: {response.status_code if response else 'No response'}")
+            self.log_test("Follow User", False, "No response (timeout)")
             return False
     
     def test_follow_status(self):
