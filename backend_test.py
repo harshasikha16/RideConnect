@@ -305,6 +305,15 @@ class RideConnectTester:
     
     def test_create_ride(self):
         """Test creating a ride"""
+        # Ensure we're logged in as the first user
+        if self.test_users:
+            user = self.test_users[0]
+            login_data = {"email": user['email'], "password": user['password']}
+            login_response = self.make_request('POST', '/auth/login', login_data, use_auth=False)
+            if login_response and login_response.status_code == 200:
+                self.session_token = login_response.json()['session_token']
+                self.user_id = user['user_id']
+        
         future_date = datetime.now() + timedelta(days=7)
         ride_data = {
             "origin": "New York",
@@ -326,7 +335,7 @@ class RideConnectTester:
                 self.log_test("Create Ride", True, f"Ride ID: {data['ride_id']}")
                 return True
             else:
-                self.log_test("Create Ride", False, f"Invalid response: {data}")
+                self.log_test("Create Ride", False, f"Invalid response: expected user_id {self.user_id}, got {data.get('user_id')}")
                 return False
         else:
             self.log_test("Create Ride", False, f"Status: {response.status_code if response else 'No response'}")
