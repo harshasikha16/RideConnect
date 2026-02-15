@@ -479,24 +479,49 @@ class RideConnectTester:
         response = self.make_request('POST', '/rides/request', request_data)
         
         success = False
+        request_id = None
+        
         if response and response.status_code == 200:
             data = response.json()
             if 'request_id' in data:
                 request_id = data['request_id']
+                print(f"    Created request: {request_id}")
                 
                 # Test getting my requests
                 my_requests = self.make_request('GET', '/rides/requests/my')
                 if my_requests and my_requests.status_code == 200:
+                    print(f"    My requests: {len(my_requests.json())} found")
+                    
                     # Switch back to original user to check received requests
                     self.session_token = old_token
                     self.user_id = old_user_id
                     
                     received_requests = self.make_request('GET', '/rides/requests/received')
                     if received_requests and received_requests.status_code == 200:
+                        received_data = received_requests.json()
+                        print(f"    Received requests: {len(received_data)} found")
+                        
                         # Accept the request
                         accept_response = self.make_request('PUT', f'/rides/requests/{request_id}?action=accept')
                         if accept_response and accept_response.status_code == 200:
+                            print(f"    Request accepted successfully")
                             success = True
+                        else:
+                            print(f"    Failed to accept request: {accept_response.status_code if accept_response else 'No response'}")
+                    else:
+                        print(f"    Failed to get received requests: {received_requests.status_code if received_requests else 'No response'}")
+                else:
+                    print(f"    Failed to get my requests: {my_requests.status_code if my_requests else 'No response'}")
+            else:
+                print(f"    Request creation response missing request_id: {data}")
+        else:
+            print(f"    Failed to create request: {response.status_code if response else 'No response'}")
+            if response:
+                try:
+                    error_data = response.json()
+                    print(f"    Error details: {error_data}")
+                except:
+                    print(f"    Response text: {response.text}")
         
         # Restore original session
         self.session_token = old_token
