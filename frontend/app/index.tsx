@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../src/context/AuthContext';
+import { useAuth } from '@/src/context/AuthContext';
 import * as Linking from 'expo-linking';
-import { api } from '../src/services/api';
+import { api } from '@/src/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Index() {
